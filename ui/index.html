@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vidloot</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar" aria-label="Main">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
+      </div>
+      <span>Vidloot</span>
+    </div>
+    <div class="nav">
+      <button class="nav-item" data-view="download">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
+        New download
+      </button>
+      <button class="nav-item" data-view="queue">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>
+        Queue
+        <span class="badge" id="queue-badge" hidden>0</span>
+      </button>
+      <button class="nav-item" data-view="settings">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+        Settings
+      </button>
+    </div>
+    <div class="side-foot">
+      <button class="plan-card" id="plan-card">
+        <span class="plan-name" id="plan-name">Free plan</span>
+        <span class="plan-cta" id="plan-cta">Upgrade to Pro</span>
+      </button>
+      <div class="engine-line" id="engine-line"><span class="dot"></span><span>Checking engine…</span></div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- ======================= DOWNLOAD ======================= -->
+    <section class="view" id="view-download" aria-labelledby="h-download">
+      <header class="view-head">
+        <h1 id="h-download">Paste a link to get started</h1>
+        <p class="muted">Works with YouTube, Vimeo, SoundCloud and 1,000+ other sites.</p>
+      </header>
+
+      <form class="link-row" id="link-form">
+        <label class="link-box" for="url">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+          <span class="sr-only">Video or playlist link</span>
+          <input id="url" type="text" autocomplete="off" spellcheck="false" placeholder="https://…">
+          <button type="button" class="chip-btn" id="paste-btn">Paste</button>
+        </label>
+        <button type="submit" class="btn btn-outline btn-lg" id="fetch-btn">Fetch info</button>
+      </form>
+
+      <div class="clip-banner" id="clip-banner" hidden>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>
+        <span>Link found on your clipboard: <strong id="clip-url"></strong></span>
+        <button class="btn btn-small" id="clip-use">Use it</button>
+        <button class="icon-btn" id="clip-dismiss" aria-label="Dismiss"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+
+      <div id="result"></div>
+    </section>
+
+    <!-- ======================= QUEUE ======================= -->
+    <section class="view" id="view-queue" aria-labelledby="h-queue" hidden>
+      <header class="view-head row">
+        <div>
+          <h1 id="h-queue">Queue</h1>
+          <p class="muted" id="queue-summary">Nothing downloading</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline" id="pause-all">Pause all</button>
+          <button class="btn btn-outline" id="clear-finished">Clear finished</button>
+        </div>
+      </header>
+      <div class="tabs" role="tablist" aria-label="Filter">
+        <button role="tab" class="tab" data-filter="all" aria-selected="true">All</button>
+        <button role="tab" class="tab" data-filter="active" aria-selected="false">Active</button>
+        <button role="tab" class="tab" data-filter="finished" aria-selected="false">Finished</button>
+      </div>
+      <div class="job-list" id="job-list"></div>
+    </section>
+
+    <!-- ======================= SETTINGS ======================= -->
+    <section class="view" id="view-settings" aria-labelledby="h-settings" hidden>
+      <header class="view-head">
+        <h1 id="h-settings">Settings</h1>
+      </header>
+
+      <div class="card" id="license-card">
+        <h2>License</h2>
+        <div id="license-body"></div>
+      </div>
+
+      <div class="card">
+        <h2>Downloads</h2>
+        <div class="field">
+          <span class="label">Save files to</span>
+          <div class="folder-row">
+            <code id="set-dir"></code>
+            <button class="btn btn-outline" id="set-dir-change">Change</button>
+            <button class="btn btn-outline" id="set-dir-open">Open</button>
+          </div>
+        </div>
+        <div class="grid2">
+          <label class="field"><span class="label">Start in</span>
+            <select id="set-mode"><option value="video">Video</option><option value="audio">Audio only</option></select>
+          </label>
+          <label class="field"><span class="label">Preferred video quality</span>
+            <select id="set-quality">
+              <option value="2160">4K (2160p)</option><option value="1440">1440p</option><option value="1080">1080p</option>
+              <option value="720">720p</option><option value="480">480p</option><option value="360">360p</option>
+            </select>
+          </label>
+          <label class="field"><span class="label">Preferred audio format</span>
+            <select id="set-audio"><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="opus">Opus</option><option value="wav">WAV</option></select>
+          </label>
+          <label class="field"><span class="label">Subtitle languages</span>
+            <input id="set-langs" type="text" spellcheck="false" placeholder="en.*,en">
+          </label>
+        </div>
+        <label class="check"><input type="checkbox" id="set-thumb"> Embed thumbnail / cover image</label>
+        <label class="check"><input type="checkbox" id="set-chapters"> Keep chapters</label>
+        <label class="check"><input type="checkbox" id="set-subs"> Subtitles on by default (Pro)</label>
+        <label class="check"><input type="checkbox" id="set-clip"> Offer links copied to the clipboard</label>
+      </div>
+
+      <div class="card">
+        <h2>Download engine</h2>
+        <p class="muted" id="engine-detail">Checking…</p>
+        <p class="muted small">Sites change often. If downloads from a site start failing, update the engine first.</p>
+        <button class="btn btn-outline" id="engine-update">Update engine</button>
+      </div>
+
+      <div class="card">
+        <h2>About</h2>
+        <p class="muted small">Vidloot 1.0.0 · Powered by yt-dlp and FFmpeg (LGPL).</p>
+        <p class="muted small">Only download content you own, content with a Creative Commons or public-domain license, or content you have permission to save. Respect each site's terms of service and copyright law.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Upgrade sheet -->
+<div class="overlay" id="upgrade" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="up-title">
+    <button class="icon-btn close" id="up-close" aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="pro-badge">PRO</div>
+    <h2 id="up-title">Unlock everything with Vidloot Pro</h2>
+    <p class="muted" id="up-reason"></p>
+    <ul class="perks">
+      <li>Up to 4K and 1440p video</li>
+      <li>Whole playlists and channels in one go</li>
+      <li>Subtitles embedded in your videos</li>
+      <li>Up to 3 downloads at the same time</li>
+    </ul>
+    <div class="sheet-actions">
+      <button class="btn btn-primary btn-lg" id="up-buy">Get Pro</button>
+      <button class="btn btn-outline btn-lg" id="up-key">I have a license key</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

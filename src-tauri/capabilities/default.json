@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The UI talks to Vidloot's own Rust commands only; files, folders, clipboard and links are handled in Rust.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

@@ -1,0 +1,76 @@
+name: Build Vidloot
+
+# Builds the Windows installer and the macOS app (one universal .dmg for
+# Apple Silicon and Intel). Push a tag like v1.0.1 to also attach them to a
+# GitHub Release.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - run: npm install
+      - run: node scripts/fetch-sidecars.mjs x86_64-pc-windows-msvc
+      - run: npx tauri build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vidloot-windows
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: 'aarch64-apple-darwin,x86_64-apple-darwin' }
+      - uses: swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - run: brew install nasm pkg-config
+      - name: Cache FFmpeg build
+        uses: actions/cache@v4
+        with:
+          path: .ffmpeg-build
+          key: ffmpeg-macos-${{ hashFiles('scripts/build-ffmpeg-macos.sh') }}
+      - run: bash scripts/build-ffmpeg-macos.sh
+      - run: npm install
+      - run: node scripts/fetch-sidecars.mjs universal-apple-darwin
+      - run: npx tauri build --target universal-apple-darwin
+        env:
+          # Optional: Developer ID signing + notarization. Without these the app
+          # still builds; users right-click → Open the first time.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vidloot-macos
+          path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*

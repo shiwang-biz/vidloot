@@ -1,0 +1,15 @@
+{
+  "name": "vidloot",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Vidloot — a friendly desktop video and audio downloader built on yt-dlp.",
+  "scripts": {
+    "sidecars": "node scripts/fetch-sidecars.mjs",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
