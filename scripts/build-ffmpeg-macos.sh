@@ -65,7 +65,7 @@ build_arch() {
   local cross=()
   [ "$arch" != "$(uname -m)" ] && cross=(--enable-cross-compile --target-os=darwin)
   ( cd "$WORK/build-$arch/ffmpeg-$FFMPEG_VERSION"
-    ./configure "${cross[@]}" \
+    ./configure ${cross[@]+"${cross[@]}"} \
       --prefix="$prefix" --arch="$arch" --cc="$cc" \
       --extra-cflags="-I$prefix/include" --extra-ldflags="-L$prefix/lib" \
       --pkg-config-flags=--static \
