@@ -24,10 +24,15 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "app", "nsis", "msi"],
+    "targets": [
+      "dmg",
+      "app",
+      "nsis",
+      "msi"
+    ],
     "category": "Video",
     "shortDescription": "Download videos and audio from 1,000+ sites",
-    "copyright": "© Bizfunnel",
+    "copyright": "\u00a9 Bizfunnel",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -35,12 +40,19 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["binaries/yt-dlp", "binaries/ffmpeg", "binaries/ffprobe"],
+    "externalBin": [
+      "binaries/yt-dlp",
+      "binaries/ffmpeg",
+      "binaries/ffprobe"
+    ],
     "macOS": {
-      "minimumSystemVersion": "11.0"
+      "minimumSystemVersion": "11.0",
+      "signingIdentity": "-"
     },
     "windows": {
-      "nsis": { "installMode": "currentUser" }
+      "nsis": {
+        "installMode": "currentUser"
+      }
     }
   }
 }

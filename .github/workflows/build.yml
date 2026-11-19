@@ -57,7 +57,13 @@ jobs:
           key: ffmpeg-macos-${{ hashFiles('scripts/build-ffmpeg-macos.sh') }}
       - run: npm install
       - run: node scripts/fetch-sidecars.mjs universal-apple-darwin
-      - run: npx tauri build --target universal-apple-darwin
+      - name: Build app
+        run: |
+          # With no signing secrets set, build an ad-hoc signed app instead of failing.
+          if [ -z "$APPLE_CERTIFICATE" ]; then
+            unset APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID
+          fi
+          npx tauri build --target universal-apple-darwin
         env:
           # Optional: Developer ID signing + notarization. Without these the app
           # still builds; users right-click → Open the first time.
