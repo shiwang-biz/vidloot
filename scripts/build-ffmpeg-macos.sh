@@ -85,8 +85,11 @@ for tool in ffmpeg ffprobe; do
   lipo -create "$WORK/arm64/bin/$tool" "$WORK/x86_64/bin/$tool" -output "$OUT/$tool-universal-apple-darwin"
   chmod 755 "$OUT/$tool-universal-apple-darwin"
   # Must only link against macOS itself, never Homebrew.
-  if otool -L "$OUT/$tool-universal-apple-darwin" | tail -n +2 | grep -vE '^\s*(/usr/lib/|/System/Library/)'; then
-    echo "ERROR: $tool links to a non-system library (listed above)." >&2; exit 1
+  # (otool lists one "(architecture …):" header per slice; library lines are indented.)
+  bad="$(otool -L "$OUT/$tool-universal-apple-darwin" | grep -E '^[[:space:]]' | awk '{print $1}' \
+        | grep -vE '^(/usr/lib/|/System/Library/)' || true)"
+  if [ -n "$bad" ]; then
+    echo "ERROR: $tool links to non-system libraries:" >&2; echo "$bad" >&2; exit 1
   fi
 done
 
