@@ -74,6 +74,16 @@ if (isWin) {
       throw new Error(`Missing ${dest(tool)}. Run: bash scripts/build-ffmpeg-macos.sh`);
     }
   }
+  // A universal build compiles each architecture separately first, and Tauri
+  // looks for per-architecture sidecars then. The universal files run on both.
+  if (target === 'universal-apple-darwin') {
+    for (const tool of ['yt-dlp', 'ffmpeg', 'ffprobe']) {
+      for (const arch of ['aarch64-apple-darwin', 'x86_64-apple-darwin']) {
+        copyFileSync(dest(tool), join(binDir, `${tool}-${arch}`));
+        chmodSync(join(binDir, `${tool}-${arch}`), 0o755);
+      }
+    }
+  }
 } else {
   // Linux: development only. Use the system ffmpeg.
   for (const tool of ['ffmpeg', 'ffprobe']) {

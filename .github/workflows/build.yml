@@ -42,12 +42,19 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with: { workspaces: src-tauri }
       - run: brew install nasm pkg-config
-      - name: Cache FFmpeg build
-        uses: actions/cache@v4
+      - name: Restore FFmpeg build
+        id: ffcache
+        uses: actions/cache/restore@v4
         with:
           path: .ffmpeg-build
           key: ffmpeg-macos-${{ hashFiles('scripts/build-ffmpeg-macos.sh') }}
       - run: bash scripts/build-ffmpeg-macos.sh
+      - name: Save FFmpeg build (even if a later step fails)
+        if: steps.ffcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ffmpeg-build
+          key: ffmpeg-macos-${{ hashFiles('scripts/build-ffmpeg-macos.sh') }}
       - run: npm install
       - run: node scripts/fetch-sidecars.mjs universal-apple-darwin
       - run: npx tauri build --target universal-apple-darwin
