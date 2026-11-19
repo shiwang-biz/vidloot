@@ -67,7 +67,7 @@ build_arch() {
   ( cd "$WORK/build-$arch/ffmpeg-$FFMPEG_VERSION"
     ./configure ${cross[@]+"${cross[@]}"} \
       --prefix="$prefix" --arch="$arch" --cc="$cc" \
-      --extra-cflags="-I$prefix/include" --extra-ldflags="-L$prefix/lib" \
+      --extra-cflags="-I$prefix/include" --extra-ldflags="-L$prefix/lib" --extra-libs="-liconv" \
       --pkg-config-flags=--static \
       --enable-static --disable-shared --disable-debug --disable-doc --disable-ffplay \
       --disable-autodetect \
