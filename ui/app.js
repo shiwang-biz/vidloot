@@ -363,6 +363,8 @@ function renderQueue() {
     h('span', null, 'Paste a link on the New download screen to start.'))]));
 }
 
+listen('license-updated', (ev) => { state.license = ev.payload; applyLicense(); });
+
 listen('job-updated', (ev) => {
   const j = ev.payload;
   const prev = state.jobs.get(j.id);
@@ -418,6 +420,7 @@ function renderLicense() {
   const badge = { active: ['ok', 'Active'], grace: ['warn', 'Offline grace period'], invalid: ['err', 'Not valid'], free: ['', 'No license'] }[L.status] || ['', L.status];
   root.append(h('div', { class: 'lic-status' }, h('span', { class: `pillbadge ${badge[0]}` }, badge[1]), h('b', null, `${e.plan} plan`),
     L.keyHint ? h('span', { class: 'muted' }, `Key ${L.keyHint}`) : null,
+    L.licensedTo ? h('span', { class: 'muted' }, `Licensed to ${L.licensedTo}`) : null,
     L.expiresAt ? h('span', { class: 'muted' }, `Renews or expires ${L.expiresAt}`) : null,
     L.updatesUntil ? h('span', { class: 'muted' }, `Updates until ${L.updatesUntil}`) : null));
   if (L.message) root.append(h('div', { class: 'notice' + (L.status === 'invalid' ? ' err' : '') }, icon('info'), h('span', null, L.message)));
@@ -427,6 +430,10 @@ function renderLicense() {
     h('li', null, `Subtitles: ${e.subtitles ? 'yes' : 'no'}`),
     h('li', null, `Downloads at once: ${e.parallelDownloads}`)));
 
+  if (!L.connected) {
+    root.append(h('div', { class: 'notice' }, icon('info'), h('span', null, "Licensing isn't set up in this build, so Vidloot runs on the Free plan.")));
+    return;
+  }
   if (L.status === 'free' || L.status === 'invalid') {
     const input = h('input', { class: 'key-input', id: 'key-input', placeholder: 'XXXX-XXXX-XXXX-XXXX', 'aria-label': 'License key', spellcheck: 'false' });
     const btn = h('button', { class: 'btn btn-primary', onclick: async () => {
@@ -437,11 +444,11 @@ function renderLicense() {
       finally { btn.disabled = false; btn.textContent = 'Activate'; }
     } }, 'Activate');
     input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') btn.click(); });
-    root.append(h('div', { class: 'lic-row' }, input, btn),
-      BUY_URL ? h('button', { class: 'link', style: 'align-self:flex-start', onclick: () => invoke('open_link', { url: BUY_URL }).catch(handleError) }, "Don't have a key? Get Pro") : null);
+    root.append(h('div', { class: 'lic-row' }, input, btn));
+    if (BUY_URL) root.append(h('button', { class: 'link', style: 'align-self:flex-start', onclick: () => invoke('open_link', { url: BUY_URL }).catch(handleError) }, "Don't have a key? Get Pro"));
   } else {
     root.append(h('div', { class: 'lic-row' },
-      h('button', { class: 'btn btn-outline', onclick: async () => { state.license = await invoke('license_refresh').catch((e) => (handleError(e), state.license)); applyLicense(); toast('License checked'); } }, 'Check now'),
+      h('button', { class: 'btn btn-outline', onclick: async () => { state.license = await invoke('license_refresh', { force: true }).catch((e) => (handleError(e), state.license)); applyLicense(); toast(state.license.status === 'active' ? 'License is valid' : state.license.message || 'License checked'); } }, 'Check now'),
       h('button', { class: 'btn btn-danger', onclick: async () => {
         try { state.license = await invoke('license_deactivate'); applyLicense(); toast('This computer was deactivated. You can use your key on another one.'); }
         catch (e) { handleError(e); }

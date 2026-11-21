@@ -3,6 +3,7 @@ package com.bizfunnel.vidloot
 import android.app.Application
 import android.util.Log
 import com.bizfunnel.vidloot.engine.DownloadManager
+import com.bizfunnel.vidloot.license.License
 import com.yausername.ffmpeg.FFmpeg
 import com.yausername.youtubedl_android.YoutubeDL
 import kotlinx.coroutines.CoroutineScope
@@ -13,7 +14,10 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         Prefs.init(this)
+        License.init(this)
         DownloadManager.init(this)
+        // Check the stored license (no network until a re-check is due).
+        CoroutineScope(Dispatchers.IO).launch { License.refresh(false); DownloadManager.pump() }
         // Unpacking Python and FFmpeg takes a moment on first launch: do it off the main thread.
         CoroutineScope(Dispatchers.IO).launch {
             val error = try {

@@ -14,6 +14,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions: { contents: write }
+    env:
+      VIDLOOT_LICENSE_API: ${{ vars.LICENSE_API_URL }}
+      VIDLOOT_LICENSE_PUBKEY: ${{ vars.LICENSE_PUBLIC_KEY }}
+      VIDLOOT_LICENSE_KID: ${{ vars.LICENSE_KEY_ID }}
+      VIDLOOT_LICENSE_PRODUCT: ${{ vars.LICENSE_PRODUCT }}
+      VIDLOOT_LICENSE_PRODUCT_ANDROID: ${{ vars.LICENSE_PRODUCT_ANDROID }}
     defaults:
       run: { working-directory: android }
     steps:
@@ -61,7 +67,11 @@ jobs:
           name: vidloot-android
           path: dist/*.apk
 
+      - name: Release note
+        if: vars.LICENSE_API_URL == '' || vars.LICENSE_PUBLIC_KEY == ''
+        run: echo "::warning::LICENSE_API_URL / LICENSE_PUBLIC_KEY repository variables are not set, so this build has no licensing and is not published as a release (APKs are in the run's artifacts)."
       - uses: softprops/action-gh-release@v2
+        if: vars.LICENSE_API_URL != '' && vars.LICENSE_PUBLIC_KEY != ''
         with:
           tag_name: android-v${{ steps.v.outputs.version }}
           name: Vidloot Android ${{ steps.v.outputs.version }}

@@ -9,6 +9,9 @@ plugins {
 // which is fine for testing but must not be used for real releases.
 val keystorePath: String? = System.getenv("VL_KEYSTORE")?.takeIf { File(it).exists() }
 
+// License server settings, from the GitHub workflow (repository variables). Empty = Free plan only.
+fun env(name: String, default: String = "") = (System.getenv(name) ?: "").ifBlank { default }.replace("\"", "")
+
 android {
     namespace = "com.bizfunnel.vidloot"
     compileSdk = 35
@@ -17,8 +20,13 @@ android {
         applicationId = "com.bizfunnel.vidloot"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
+
+        buildConfigField("String", "LICENSE_API", "\"${env("VIDLOOT_LICENSE_API")}\"")
+        buildConfigField("String", "LICENSE_PUBKEY", "\"${env("VIDLOOT_LICENSE_PUBKEY")}\"")
+        buildConfigField("String", "LICENSE_KID", "\"${env("VIDLOOT_LICENSE_KID", "k1")}\"")
+        buildConfigField("String", "LICENSE_PRODUCT", "\"${env("VIDLOOT_LICENSE_PRODUCT_ANDROID", env("VIDLOOT_LICENSE_PRODUCT", "vidloot-desktop"))}\"")
     }
 
     signingConfigs {
@@ -59,7 +67,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
 }
 
 kotlin { jvmToolchain(17) }
@@ -77,7 +88,10 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    // Ed25519 signature checks for the license client.
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
+    testImplementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 }

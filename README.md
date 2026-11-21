@@ -64,11 +64,38 @@ Plan limits are enforced in Rust (`engine.rs` → `enqueue` and `pump`), so edit
 
 Change the Free limits in `license.rs → Entitlements::free()`.
 
+## Licensing (Bizfunnel License Manager)
+
+Desktop uses your Rust SDK as is (`crates/bizfunnel-license`). Android uses a Kotlin port of the same
+client (`android/.../license/LicenseClient.kt`, same protocol and checks, with tests).
+
+**Set up once in the License Manager panel:** a product with binding **Device**, slug `vidloot-desktop`
+(one key then works on PC, Mac and phone; each device uses one seat). On the Pro plan add:
+
+| Panel setting | Type | Vidloot meaning |
+|---|---|---|
+| `playlists` | feature | whole playlists |
+| `subtitles` | feature | subtitles |
+| `max_height` | limit | highest video height; 0 or not set = no limit (4K) |
+| `parallel_downloads` | limit | downloads at once; not set = 3 |
+
+**Set up once in GitHub:** repo → Settings → Secrets and variables → Actions → **Variables** tab:
+
+| Variable | Value |
+|---|---|
+| `LICENSE_API_URL` | e.g. `https://licenses.yourdomain.com/api/v1` |
+| `LICENSE_PUBLIC_KEY` | Settings & API → Public key (never the private key) |
+| `LICENSE_KEY_ID` | optional, default `k1` |
+| `LICENSE_PRODUCT` | optional, default `vidloot-desktop` |
+| `LICENSE_PRODUCT_ANDROID` | optional: a separate Android product slug |
+
+Builds without `LICENSE_API_URL` and `LICENSE_PUBLIC_KEY` run on the Free plan and are **not** published as releases.
+
 ## Things to set before release
 
 1. `ui/app.js` → `BUY_URL`: your checkout page. While it's empty, buy buttons are hidden.
 2. `src-tauri/tauri.conf.json` → `identifier`, `copyright`, version.
-3. License Manager: product **vidloot-desktop** (binding: Device) with Free/Pro plans and the feature flags above.
+3. Licensing: see the section above.
 
 ## Keeping downloads working
 

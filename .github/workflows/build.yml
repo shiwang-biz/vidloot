@@ -14,6 +14,12 @@ on:
 jobs:
   windows:
     runs-on: windows-latest
+    env:
+      # License server, from Settings → Secrets and variables → Actions → Variables.
+      VIDLOOT_LICENSE_API: ${{ vars.LICENSE_API_URL }}
+      VIDLOOT_LICENSE_PUBKEY: ${{ vars.LICENSE_PUBLIC_KEY }}
+      VIDLOOT_LICENSE_KID: ${{ vars.LICENSE_KEY_ID }}
+      VIDLOOT_LICENSE_PRODUCT: ${{ vars.LICENSE_PRODUCT }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,6 +39,12 @@ jobs:
 
   macos:
     runs-on: macos-latest
+    env:
+      # License server, from Settings → Secrets and variables → Actions → Variables.
+      VIDLOOT_LICENSE_API: ${{ vars.LICENSE_API_URL }}
+      VIDLOOT_LICENSE_PUBKEY: ${{ vars.LICENSE_PUBLIC_KEY }}
+      VIDLOOT_LICENSE_KID: ${{ vars.LICENSE_KEY_ID }}
+      VIDLOOT_LICENSE_PRODUCT: ${{ vars.LICENSE_PRODUCT }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -79,6 +91,8 @@ jobs:
           path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
 
   release:
+    # Only publish builds that have the license server baked in.
+    if: vars.LICENSE_API_URL != '' && vars.LICENSE_PUBLIC_KEY != ''
     needs: [windows, macos]
     runs-on: ubuntu-latest
     permissions: { contents: write }

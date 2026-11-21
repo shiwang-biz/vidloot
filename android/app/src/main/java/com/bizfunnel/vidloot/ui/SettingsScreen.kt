@@ -80,6 +80,8 @@ fun SettingsScreen(modifier: Modifier, onMessage: (String) -> Unit) {
                 Text("${e.plan} plan", fontWeight = FontWeight.SemiBold)
             }
             license.keyHint?.let { Text("Key $it", color = C.muted, fontSize = 13.sp) }
+            license.licensedTo?.let { Text("Licensed to $it", color = C.muted, fontSize = 13.sp) }
+            license.updatesUntil?.let { Text("Updates until $it", color = C.muted, fontSize = 13.sp) }
             license.expiresAt?.let { Text("Renews or expires $it", color = C.muted, fontSize = 13.sp) }
             license.message?.let { Notice(it, isError = license.status == "invalid") }
             Text(
@@ -87,7 +89,9 @@ fun SettingsScreen(modifier: Modifier, onMessage: (String) -> Unit) {
                     "Subtitles ${if (e.subtitles) "yes" else "no"} · ${e.parallelDownloads} at a time",
                 color = C.text2, fontSize = 13.sp,
             )
-            if (!license.isPro) {
+            if (!license.connected) {
+                Notice("Licensing isn't set up in this build, so Vidloot runs on the Free plan.")
+            } else if (!license.isPro) {
                 OutlinedTextField(
                     value = key, onValueChange = { key = it.uppercase() }, singleLine = true,
                     placeholder = { Text("XXXX-XXXX-XXXX-XXXX") },
@@ -110,7 +114,22 @@ fun SettingsScreen(modifier: Modifier, onMessage: (String) -> Unit) {
                 ) { Text(if (activating) "Activating…" else "Activate", fontWeight = FontWeight.SemiBold) }
             } else {
                 OutlinedButton(
-                    onClick = { scope.launch { License.deactivate(); onMessage("This phone was deactivated. You can use your key on another device.") } },
+                    onClick = {
+                        scope.launch {
+                            val i = License.refresh(force = true)
+                            onMessage(if (i.status == "active") "License is valid" else i.message ?: "License checked")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
+                ) { Text("Check now", color = C.text) }
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            License.deactivate()
+                                .onSuccess { onMessage("This phone was deactivated. You can use your key on another device.") }
+                                .onFailure { onMessage(it.message ?: "Couldn't deactivate.") }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp),
                 ) { Text("Deactivate this phone", color = C.err) }
             }
@@ -161,7 +180,7 @@ fun SettingsScreen(modifier: Modifier, onMessage: (String) -> Unit) {
         }
 
         Section("About") {
-            Text("Vidloot 1.0.0 · Powered by yt-dlp and FFmpeg (LGPL).", color = C.muted, fontSize = 12.sp)
+            Text("Vidloot 1.0.1 · Powered by yt-dlp and FFmpeg (LGPL).", color = C.muted, fontSize = 12.sp)
             Text(
                 "Only download content you own, content with a Creative Commons or public-domain license, or content you have permission to save. " +
                     "Respect each site's terms of service and copyright law.",

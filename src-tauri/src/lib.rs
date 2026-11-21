@@ -201,9 +201,10 @@ async fn license_deactivate(state: State<'_, AppState>) -> Result<LicenseInfo, S
     state.license.deactivate().await
 }
 
+/// `force: true` asks the server now ("Check now"); otherwise the SDK decides.
 #[tauri::command]
-async fn license_refresh(state: State<'_, AppState>) -> Result<LicenseInfo, String> {
-    Ok(state.license.refresh().await)
+async fn license_refresh(state: State<'_, AppState>, force: Option<bool>) -> Result<LicenseInfo, String> {
+    Ok(state.license.refresh(force.unwrap_or(false)).await)
 }
 
 // ------------------------------------------------------------------ startup
@@ -230,10 +231,18 @@ pub fn run() {
             let handle = app.handle().clone();
             let ytdlp = tauri::async_runtime::block_on(choose_engine(&handle));
             let history = engine::load_history(&handle);
+            let version = app.package_info().version.to_string();
             app.manage(AppState {
                 engine: Engine::new(ytdlp, history),
                 settings: Mutex::new(settings::load(&handle)),
-                license: License::new(),
+                license: License::new(paths::data_dir(&handle), &version),
+            });
+            // Check the stored license at start-up (no network until a re-check is due).
+            let h = handle.clone();
+            tauri::async_runtime::spawn(async move {
+                let state = h.state::<AppState>();
+                let info = state.license.refresh(false).await;
+                let _ = tauri::Emitter::emit(&h, "license-updated", &info);
             });
             Ok(())
         })
