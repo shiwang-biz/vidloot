@@ -9,7 +9,7 @@
 //!   VIDLOOT_LICENSE_API      e.g. https://licenses.example.com/api/v1
 //!   VIDLOOT_LICENSE_PUBKEY   the base64 public key from Settings & API
 //!   VIDLOOT_LICENSE_KID      key id (default "k1")
-//!   VIDLOOT_LICENSE_PRODUCT  product slug (default "vidloot-desktop")
+//!   VIDLOOT_LICENSE_PRODUCT  product slug (default "vidloot")
 //! Without them the app still runs, on the Free plan, and activation explains why.
 //!
 //! How a plan maps to Vidloot features (set these on the plan in the panel):
@@ -138,7 +138,7 @@ impl License {
             };
         };
         let kid = KID.filter(|s| !s.is_empty()).unwrap_or("k1");
-        let product = PRODUCT.filter(|s| !s.is_empty()).unwrap_or("vidloot-desktop");
+        let product = PRODUCT.filter(|s| !s.is_empty()).unwrap_or("vidloot");
         let cfg = Config::new(api, product, [(kid, pubkey)], data_dir.join("license.json"))
             .app_version(app_version)
             .timeout(std::time::Duration::from_secs(15));

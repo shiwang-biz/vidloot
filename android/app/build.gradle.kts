@@ -26,7 +26,7 @@ android {
         buildConfigField("String", "LICENSE_API", "\"${env("VIDLOOT_LICENSE_API")}\"")
         buildConfigField("String", "LICENSE_PUBKEY", "\"${env("VIDLOOT_LICENSE_PUBKEY")}\"")
         buildConfigField("String", "LICENSE_KID", "\"${env("VIDLOOT_LICENSE_KID", "k1")}\"")
-        buildConfigField("String", "LICENSE_PRODUCT", "\"${env("VIDLOOT_LICENSE_PRODUCT_ANDROID", env("VIDLOOT_LICENSE_PRODUCT", "vidloot-desktop"))}\"")
+        buildConfigField("String", "LICENSE_PRODUCT", "\"${env("VIDLOOT_LICENSE_PRODUCT_ANDROID", env("VIDLOOT_LICENSE_PRODUCT", "vidloot"))}\"")
     }
 
     signingConfigs {

@@ -69,7 +69,7 @@ Change the Free limits in `license.rs → Entitlements::free()`.
 Desktop uses your Rust SDK as is (`crates/bizfunnel-license`). Android uses a Kotlin port of the same
 client (`android/.../license/LicenseClient.kt`, same protocol and checks, with tests).
 
-**Set up once in the License Manager panel:** a product with binding **Device**, slug `vidloot-desktop`
+**Set up once in the License Manager panel:** a product with binding **Device**, slug `vidloot`
 (one key then works on PC, Mac and phone; each device uses one seat). On the Pro plan add:
 
 | Panel setting | Type | Vidloot meaning |
@@ -86,7 +86,7 @@ client (`android/.../license/LicenseClient.kt`, same protocol and checks, with t
 | `LICENSE_API_URL` | e.g. `https://licenses.yourdomain.com/api/v1` |
 | `LICENSE_PUBLIC_KEY` | Settings & API → Public key (never the private key) |
 | `LICENSE_KEY_ID` | optional, default `k1` |
-| `LICENSE_PRODUCT` | optional, default `vidloot-desktop` |
+| `LICENSE_PRODUCT` | optional, default `vidloot` |
 | `LICENSE_PRODUCT_ANDROID` | optional: a separate Android product slug |
 
 Builds without `LICENSE_API_URL` and `LICENSE_PUBLIC_KEY` run on the Free plan and are **not** published as releases.
